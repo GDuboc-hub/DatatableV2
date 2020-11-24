@@ -968,12 +968,10 @@ export default class DatatableV2 extends LightningElement {
             if (edraft != undefined) {
                 let efieldNames = Object.keys(edraft);
                 efieldNames.forEach(ef => {
-                    // TESTESTESTEST
+                    // Format Percentages to have limited decimal numbers
                     if(this.percentFieldArray.indexOf(ef) != -1) {
                         let col = this.cols.find(e => e.label == (ef.replace('__c', '')))
                         eitem[ef] = Number(edraft[ef]).toFixed(col.typeAttributes.scale); // Percent field
-                        console.log('EITEM[EF]', eitem[ef]); 
-                        console.log('Cols', col); 
                     } else {
                         eitem[ef] = edraft[ef];
                     }
