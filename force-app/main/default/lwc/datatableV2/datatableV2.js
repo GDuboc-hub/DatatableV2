@@ -573,7 +573,6 @@ export default class DatatableV2 extends LightningElement {
         data.forEach(record => {
 
             numberFields.forEach(nb => {
-                console.log('Type:' + typeof(record[nb]) + ' - NB:' + nb + ' - record NB:' + record[nb]);
                 record[nb] = parseFloat(record[nb]);
             })
 
@@ -589,7 +588,7 @@ export default class DatatableV2 extends LightningElement {
 
             // Store percent field data as value/100
             percentFields.forEach(pct => {
-                record[pct] = record[pct]/100;
+                record[pct] = parseFloat(record[pct]);
             });
 
             // Flatten returned data
@@ -804,13 +803,21 @@ export default class DatatableV2 extends LightningElement {
                     break;
                 case 'currency':
                 case 'number':
-                case 'percent':
                     if (this.isUserDefinedObject) {
                         let minDigits = (this.scaleAttrib) ? this.scaleAttrib.scale : scale;
                         this.typeAttributes = { minimumFractionDigits: minDigits };      // JSON Version
                     } else {
                         this.typeAttributes = { minimumFractionDigits:scale };   // Show the number of decimal places defined for the field
                     }
+                    break;
+                case 'percent':
+                    if (this.isUserDefinedObject) {
+                        let minDigits = (this.scaleAttrib) ? this.scaleAttrib.scale : scale;
+                        this.typeAttributes = { minimumFractionDigits: minDigits };      // JSON Version
+                    } else {
+                        this.typeAttributes = { minimumFractionDigits:scale, scale: scale };   // Show the number of decimal places defined for the field
+                    }
+                    this.typeAttrib.type = 'number';
                     break;
                 case 'richtext':
                     this.typeAttrib.type = 'richtext';
@@ -961,10 +968,16 @@ export default class DatatableV2 extends LightningElement {
             if (edraft != undefined) {
                 let efieldNames = Object.keys(edraft);
                 efieldNames.forEach(ef => {
-                    // if(this.percentFieldArray.indexOf(ef) != -1) {
-                    //     eitem[ef] = Number(edraft[ef])*100; // Percent field
-                    // }
-                    eitem[ef] = edraft[ef];
+                    // TESTESTESTEST
+                    if(this.percentFieldArray.indexOf(ef) != -1) {
+                        let col = this.cols.find(e => e.label == (ef.replace('__c', '')))
+                        eitem[ef] = Number(edraft[ef]).toFixed(col.typeAttributes.scale); // Percent field
+                        console.log('EITEM[EF]', eitem[ef]); 
+                        console.log('Cols', col); 
+                    } else {
+                        eitem[ef] = edraft[ef];
+                    }
+
                 });
 
                 // Add/update edited record to output collection
@@ -984,6 +997,11 @@ export default class DatatableV2 extends LightningElement {
                 let numberFields = this.numberFieldArray;
                 numberFields.forEach(nb => {
                     field[nb] = parseFloat(field[nb]);
+                });
+
+                let percentFields = this.percentFieldArray;
+                percentFields.forEach(pct => {
+                    field[pct] = parseFloat(field[pct]);
                 });
 
                 this.outputEditedRows = [...this.outputEditedRows,eitem];     // Add to output attribute collection
@@ -1221,8 +1239,7 @@ export default class DatatableV2 extends LightningElement {
             case 'currency':
                 return 'currency';
             case 'percent':
-                // return 'percent-fixed';  // This would be to enter 35 to get 35% (0.35)
-                return 'percent';
+                return 'percent-fixed';  // This would be to enter 35 to get 35% (0.35)
             case 'number':
                 return 'number';
             default:
