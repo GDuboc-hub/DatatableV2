@@ -949,7 +949,6 @@ export default class DatatableV2 extends LightningElement {
     handleSave(event) {
         // Only used with inline editing
         const draftValues = event.detail.draftValues;
-
         // Apply drafts to mydata
         let data = [...this.mydata];
         data = data.map(item => {
@@ -960,7 +959,6 @@ export default class DatatableV2 extends LightningElement {
             }
             return item;
         });
-
         // Apply drafts to editedData
         let edata = [...this.editedData];
         edata = edata.map(eitem => {
@@ -970,8 +968,8 @@ export default class DatatableV2 extends LightningElement {
                 efieldNames.forEach(ef => {
                     // Format Percentages to have limited decimal numbers
                     if(this.percentFieldArray.indexOf(ef) != -1) {
-                        let col = this.cols.find(e => e.label == (ef.replace('__c', '')))
-                        eitem[ef] = Number(edraft[ef]).toFixed(col.typeAttributes.scale); // Percent field
+                        let col = this.cols.find(e => e.fieldName == ef)
+                        eitem[ef] = parseFloat(edraft[ef]).toFixed(col.typeAttributes.scale); // Percent field
                     } else {
                         eitem[ef] = edraft[ef];
                     }
